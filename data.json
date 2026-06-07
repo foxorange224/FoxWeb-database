@@ -555,10 +555,6 @@
         "SP1",
         "OPTIMIZADO"
       ],
-      "security": {
-        "verified": true,
-        "note": "Archivo verificado por el equipo de FoxWeb"
-      },
       "id": "000044"
     },
     {
@@ -572,10 +568,6 @@
         "OPTIMIZADO",
         "WINDOWS 8"
       ],
-      "security": {
-        "verified": true,
-        "note": "Archivo verificado por el equipo de FoxWeb"
-      },
       "id": "000045"
     },
     {
@@ -627,10 +619,6 @@
         "HERRAMIENTAS",
         "DIAGNÓSTICO"
       ],
-      "security": {
-        "verified": true,
-        "note": "Archivo verificado - Kit de herramientas de rescate conocido"
-      },
       "id": "000050"
     }
   ],
@@ -699,19 +687,6 @@
         "REALISTA"
       ],
       "id": "000054"
-    },
-    {
-      "name": "Steam",
-      "icon": "",
-      "info": "Plataforma de distribución digital de videojuegos. Miles de juegos, comunidad y funciones sociales.",
-      "enlace": "https://store.steampowered.com/about/",
-      "modal": null,
-      "badges": [
-        "JUEGOS",
-        "PLATAFORMA",
-        "GRATUITO"
-      ],
-      "id": "000055"
     },
     {
       "name": "Legacy Launcher",
@@ -1845,6 +1820,5 @@
       ],
       "id": "000139"
     }
-  ],
-  "modales": {}
+  ]
 }
