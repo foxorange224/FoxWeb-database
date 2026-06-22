@@ -36,6 +36,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
 
     def _build_ui(self):
         self.setWindowTitle('FoxWeb Database Manager')
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'favicon.ico')))
         self.setGeometry(100, 100, 1150, 720)
 
         mw = QtWidgets.QWidget()
