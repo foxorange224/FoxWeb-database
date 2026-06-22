@@ -222,10 +222,10 @@ class FoxWebManager(QtWidgets.QMainWindow):
         self.setStatusBar(self.status_bar)
 
     def _setup_shortcuts(self):
-        QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+S'), self, self._on_save)
-        QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+N'), self, self._on_add)
-        QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+D'), self, self._on_delete)
-        QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+R'), self, self._on_reorder)
+        QtGui.QShortcut(QtGui.QKeySequence('Ctrl+S'), self, self._on_save)
+        QtGui.QShortcut(QtGui.QKeySequence('Ctrl+N'), self, self._on_add)
+        QtGui.QShortcut(QtGui.QKeySequence('Ctrl+D'), self, self._on_delete)
+        QtGui.QShortcut(QtGui.QKeySequence('Ctrl+R'), self, self._on_reorder)
 
 
     def _update_title(self):
