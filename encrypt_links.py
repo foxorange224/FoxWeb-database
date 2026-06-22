@@ -6,6 +6,7 @@ import hashlib
 import hmac
 
 PASSWORD = "X9f2-K7wQ-M5pZ-V2tRt-XyZ99"
+ITERATIONS = 2000
 
 sbox = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -191,7 +192,7 @@ def aes_cbc_decrypt(ciphertext, key, iv):
     return pkcs7_unpad(bytes(result))
 
 def derive_key(password, salt):
-    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000, dklen=32)
+    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, ITERATIONS, dklen=32)
 
 def encrypt_enlace(enlace, password):
     salt = os.urandom(16)
@@ -216,6 +217,8 @@ def main():
 
     for category in data:
         for item in data[category]:
+            if 'modal' in item:
+                del item['modal']
             if 'enlace' in item and item['enlace'] and item['enlace'] != '#':
                 item['enlace'] = encrypt_enlace(item['enlace'], PASSWORD)
 
