@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""PyQt5 GUI manager for FoxWeb database."""
+"""PyQt6 GUI manager for FoxWeb database."""
 
-import sys
+import sys, os
 import logging
 from typing import Optional
 
