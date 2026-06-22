@@ -7,6 +7,7 @@ from typing import Optional
 
 from PIL import Image
 from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6.QtGui import QIcon
 
 from data_manager import DataManager
 
@@ -102,10 +103,13 @@ class FoxWebManager(QtWidgets.QMainWindow):
 
         icon_btn_row = QtWidgets.QHBoxLayout()
         self.btn_change_icon = QtWidgets.QPushButton('Cambiar icono...')
+        self.btn_change_icon.setIcon(QIcon.fromTheme('document-open'))
         self.btn_change_icon.clicked.connect(self._on_change_icon)
         self.btn_remove_icon = QtWidgets.QPushButton('Quitar icono')
+        self.btn_remove_icon.setIcon(QIcon.fromTheme('edit-delete'))
         self.btn_remove_icon.clicked.connect(self._on_remove_icon)
         self.btn_fix_icons = QtWidgets.QPushButton('Reparar todos')
+        self.btn_fix_icons.setIcon(QIcon.fromTheme('tools'))
         self.btn_fix_icons.clicked.connect(self._on_fix_icons)
 
         icon_btn_row.addWidget(self.btn_change_icon)
@@ -140,8 +144,10 @@ class FoxWebManager(QtWidgets.QMainWindow):
 
         md_btn_row = QtWidgets.QHBoxLayout()
         self.btn_md_save = QtWidgets.QPushButton('Guardar .md')
+        self.btn_md_save.setIcon(QIcon.fromTheme('document-save'))
         self.btn_md_save.clicked.connect(self._on_md_save)
         self.btn_md_delete = QtWidgets.QPushButton('Eliminar .md')
+        self.btn_md_delete.setIcon(QIcon.fromTheme('edit-delete'))
         self.btn_md_delete.clicked.connect(self._on_md_delete)
 
         self.md_status = QtWidgets.QLabel('')
@@ -159,22 +165,28 @@ class FoxWebManager(QtWidgets.QMainWindow):
         tabs.addTab(md_tab, 'Info adicional')
 
         btn_row = QtWidgets.QHBoxLayout()
-        self.btn_add = QtWidgets.QPushButton('+ Nuevo')
+        self.btn_add = QtWidgets.QPushButton('Nuevo')
+        self.btn_add.setIcon(QIcon.fromTheme('list-add'))
         self.btn_add.clicked.connect(self._on_add)
 
         self.btn_delete = QtWidgets.QPushButton('Eliminar')
+        self.btn_delete.setIcon(QIcon.fromTheme('edit-delete'))
         self.btn_delete.clicked.connect(self._on_delete)
 
-        self.btn_move_up = QtWidgets.QPushButton('▲ Subir')
+        self.btn_move_up = QtWidgets.QPushButton('Subir')
+        self.btn_move_up.setIcon(QIcon.fromTheme('go-up'))
         self.btn_move_up.clicked.connect(self._on_move_up)
 
-        self.btn_move_down = QtWidgets.QPushButton('▼ Bajar')
+        self.btn_move_down = QtWidgets.QPushButton('Bajar')
+        self.btn_move_down.setIcon(QIcon.fromTheme('go-down'))
         self.btn_move_down.clicked.connect(self._on_move_down)
 
-        self.btn_reorder = QtWidgets.QPushButton('Reordenar IDs')
+        self.btn_reorder = QtWidgets.QPushButton('Reordenar')
+        self.btn_reorder.setIcon(QIcon.fromTheme('view-refresh'))
         self.btn_reorder.clicked.connect(self._on_reorder)
 
         self.btn_save = QtWidgets.QPushButton('Guardar')
+        self.btn_save.setIcon(QIcon.fromTheme('document-save'))
         self.btn_save.clicked.connect(self._on_save)
 
         btn_row.addWidget(self.btn_add)
