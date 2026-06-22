@@ -49,7 +49,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
         self.tree = QtWidgets.QTreeWidget()
         self.tree.setHeaderLabels(['Nombre', 'ID'])
         self.tree.setColumnWidth(0, 200)
-        self.tree.itemClicked.connect(self._on_tree_click)
+        self.tree.currentItemChanged.connect(self._on_tree_current_changed)
         ll.addWidget(self.tree, 1)
 
         right = QtWidgets.QWidget()
@@ -254,6 +254,10 @@ class FoxWebManager(QtWidgets.QMainWindow):
                 s.setData(0, QtCore.Qt.UserRole, ('item', cat, idx))
                 ci.addChild(s)
         self.tree.expandAll()
+
+    def _on_tree_current_changed(self, current, previous):
+        if current:
+            self._on_tree_click(current, 0)
 
     def _on_tree_click(self, item, col):
         data = item.data(0, QtCore.Qt.UserRole)
