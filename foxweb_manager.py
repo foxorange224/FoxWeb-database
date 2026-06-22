@@ -240,7 +240,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
         for cat in self.dm.categories_order:
             if cat not in self.dm.data:
                 continue
-            ci = QtWidgets.QTreeWidgetItem([cat.capitalize(), f'{len(self.dm.data[cat])}'])
+            ci = QtWidgets.QTreeWidgetItem([cat.capitalize()])
             ci.setData(0, QtCore.Qt.ItemDataRole.UserRole, ('cat', cat))
             f = ci.font(0)
             f.setBold(True)
