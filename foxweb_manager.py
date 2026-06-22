@@ -6,7 +6,7 @@ import logging
 from typing import Optional
 
 from PIL import Image
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt6 import QtWidgets, QtCore, QtGui
 
 from data_manager import DataManager
 
@@ -94,7 +94,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
 
         self.icon_preview = QtWidgets.QLabel('Sin icono')
         self.icon_preview.setFixedSize(180, 180)
-        self.icon_preview.setAlignment(QtCore.Qt.AlignCenter)
+        self.icon_preview.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.icon_preview.setStyleSheet(
             'background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #666;'
         )
@@ -119,7 +119,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
         self.icon_info_label.setStyleSheet('color: #888;')
         self.icon_info_label.setWordWrap(True)
 
-        il.addWidget(self.icon_preview, 0, QtCore.Qt.AlignCenter)
+        il.addWidget(self.icon_preview, 0, QtCore.Qt.AlignmentFlag.AlignCenter)
         il.addLayout(icon_btn_row)
         il.addWidget(self.icon_info_label)
         il.addStretch()
@@ -243,14 +243,14 @@ class FoxWebManager(QtWidgets.QMainWindow):
             if cat not in self.dm.data:
                 continue
             ci = QtWidgets.QTreeWidgetItem([cat.capitalize(), f'{len(self.dm.data[cat])}'])
-            ci.setData(0, QtCore.Qt.UserRole, ('cat', cat))
+            ci.setData(0, QtCore.Qt.ItemDataRole.UserRole, ('cat', cat))
             f = ci.font(0)
             f.setBold(True)
             ci.setFont(0, f)
             self.tree.addTopLevelItem(ci)
             for idx, item in enumerate(self.dm.data[cat]):
                 s = QtWidgets.QTreeWidgetItem([item.get('name', ''), item.get('id', '')])
-                s.setData(0, QtCore.Qt.UserRole, ('item', cat, idx))
+                s.setData(0, QtCore.Qt.ItemDataRole.UserRole, ('item', cat, idx))
                 ci.addChild(s)
         self.tree.expandAll()
 
@@ -259,7 +259,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
             self._on_tree_click(current, 0)
 
     def _on_tree_click(self, item, col):
-        data = item.data(0, QtCore.Qt.UserRole)
+        data = item.data(0, QtCore.Qt.ItemDataRole.UserRole)
         if not data:
             return
         if data[0] == 'cat':
@@ -410,7 +410,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
     def _select_tree_item(self, cat: str, idx: int):
         for i in range(self.tree.topLevelItemCount()):
             ci = self.tree.topLevelItem(i)
-            d = ci.data(0, QtCore.Qt.UserRole)
+            d = ci.data(0, QtCore.Qt.ItemDataRole.UserRole)
             if d and d[0] == 'cat' and d[1] == cat:
                 child = ci.child(idx)
                 if child:
@@ -423,9 +423,9 @@ class FoxWebManager(QtWidgets.QMainWindow):
             self, 'Reordenar IDs',
             '¿Reasignar IDs secuenciales y renombrar iconos/.md?\n'
             'Los elementos se ordenarán por categoría e ID actual.',
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
         )
-        if confirm != QtWidgets.QMessageBox.Yes:
+        if confirm != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         self.dm.reorder_ids()
         self.current_idx = None
@@ -454,9 +454,9 @@ class FoxWebManager(QtWidgets.QMainWindow):
         r = QtWidgets.QMessageBox.question(
             self, 'Confirmar',
             f'¿Eliminar "{entry.get("name")}"?',
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
         )
-        if r == QtWidgets.QMessageBox.Yes:
+        if r == QtWidgets.QMessageBox.StandardButton.Yes:
             self.dm.delete_item(self.current_cat, self.current_idx)
             self.current_idx = None
             self._clear_form()
@@ -493,16 +493,16 @@ class FoxWebManager(QtWidgets.QMainWindow):
             r = QtWidgets.QMessageBox.question(
                 self, 'Cambios sin guardar',
                 'Hay cambios sin guardar. ¿Guardar antes de salir?',
-                QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.StandardButton.Save | QtWidgets.QMessageBox.StandardButton.Discard | QtWidgets.QMessageBox.StandardButton.Cancel,
             )
-            if r == QtWidgets.QMessageBox.Save:
+            if r == QtWidgets.QMessageBox.StandardButton.Save:
                 if self.current_idx is not None and self.current_cat:
                     self._save_current_item()
                 if not self.dm.save():
                     QtWidgets.QMessageBox.critical(self, 'Error', 'No se pudo guardar')
                     event.ignore()
                     return
-            elif r == QtWidgets.QMessageBox.Cancel:
+            elif r == QtWidgets.QMessageBox.StandardButton.Cancel:
                 event.ignore()
                 return
         event.accept()
@@ -513,4 +513,4 @@ if __name__ == '__main__':
     app.setStyle('Fusion')
     w = FoxWebManager()
     w.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -276,11 +276,11 @@ class DataManager:
         return fixed
 
     def get_icon_pixmap(self, item_id: str, size: int = 180):
-        from PyQt5 import QtGui, QtCore
+        from PyQt6 import QtGui, QtCore
         if item_id in self._icon_cache:
             pix = self._icon_cache[item_id]
             if pix and not pix.isNull():
-                return pix.scaled(size, size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                return pix.scaled(size, size, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
 
         path = icon_path(item_id)
         if not os.path.exists(path):
@@ -290,10 +290,10 @@ class DataManager:
             from PIL import Image as PilImage
             pil_img = PilImage.open(path).convert('RGBA')
             data = pil_img.tobytes('raw', 'RGBA')
-            qimg = QtGui.QImage(data, pil_img.width, pil_img.height, QtGui.QImage.Format_RGBA8888)
+            qimg = QtGui.QImage(data, pil_img.width, pil_img.height, QtGui.QImage.Format.Format_RGBA8888)
             pix = QtGui.QPixmap.fromImage(qimg)
             if not pix.isNull():
-                scaled = pix.scaled(size, size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                scaled = pix.scaled(size, size, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
                 self._icon_cache[item_id] = pix
                 return scaled
         except Exception:
