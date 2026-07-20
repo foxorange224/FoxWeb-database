@@ -3,6 +3,7 @@
 
 import sys, os, json, re, shutil
 import logging
+import uuid
 from typing import Optional
 from urllib.request import Request, urlopen
 from urllib.error import URLError
@@ -10,11 +11,12 @@ import io
 
 from PIL import Image
 from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QSyntaxHighlighter, QTextCharFormat, QColor, QFont, QAction, QKeySequence
 from PyQt6.QtWidgets import QApplication, QStyleFactory
 
 
-from crypto_utils import DATA_FILE, ICONS_DIR
+from crypto_utils import DATA_FILE, ICONS_DIR, MDS_DIR, MEDIA_DIR, media_path
 # ...
 from data_manager import DataManager
 
@@ -312,6 +314,10 @@ class FoxWebManager(QtWidgets.QMainWindow):
         self.verified_cb = QtWidgets.QCheckBox('Verificado')
         self.verified_cb.stateChanged.connect(self._on_form_changed)
         
+        self.source_combo = QtWidgets.QComboBox()
+        self.source_combo.addItems(['open', 'close'])
+        self.source_combo.currentTextChanged.connect(self._on_form_changed)
+        
         self.badges_input = QtWidgets.QLineEdit()
         self.badges_input.setPlaceholderText('Ej: LIGERO, OPEN SOURCE, WINDOWS XP')
         self.badges_input.textChanged.connect(self._on_badges_changed)
@@ -370,6 +376,7 @@ class FoxWebManager(QtWidgets.QMainWindow):
         fl.addRow('Enlace:', enlace_container)
         fl.addRow('ID:', self.id_input)
         fl.addRow('Verificado:', self.verified_cb)
+        fl.addRow('Fuente:', self.source_combo)
         fl.addRow('Badges:', badges_container)
 
         icon_tab = QtWidgets.QWidget()
@@ -416,6 +423,18 @@ class FoxWebManager(QtWidgets.QMainWindow):
         tabs.addTab(self.form_widget, 'Editar')
         tabs.addTab(icon_tab, 'Icono')
 
+        req_tab = QtWidgets.QWidget()
+        req_layout = QtWidgets.QFormLayout(req_tab)
+        req_fields = [('Sistema', 'os'), ('Procesador', 'cpu'), ('RAM', 'ram'), ('Gráficos', 'gpu'), ('Disco', 'spc')]
+        for label, key in req_fields:
+            inp = QtWidgets.QLineEdit()
+            inp.setPlaceholderText('N/A')
+            inp.textChanged.connect(self._on_form_changed)
+            req_layout.addRow(label + ':', inp)
+            setattr(self, f'req_{key}', inp)
+        req_layout.addItem(QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding))
+        tabs.addTab(req_tab, 'Requisitos')
+
         md_tab = QtWidgets.QWidget()
         mml = QtWidgets.QVBoxLayout(md_tab)
 
@@ -432,6 +451,80 @@ class FoxWebManager(QtWidgets.QMainWindow):
         )
         self.md_editor.textChanged.connect(self._mark_modified)
         self.md_highlighter = MdHighlighter(self.md_editor.document())
+        self.md_editor.setAcceptRichText(False)
+
+        def save_as_webp(image_source, is_pixmap=False):
+            os.makedirs(MEDIA_DIR, exist_ok=True)
+            filename = f"{uuid.uuid4().hex[:12]}.webp"
+            filepath = media_path(filename)
+            max_size = 100 * 1024
+            try:
+                if is_pixmap:
+                    qimg = image_source.toImage()
+                    quality = 85
+                    w, h = qimg.width(), qimg.height()
+                    while True:
+                        qimg.save(filepath, "WEBP", quality=quality)
+                        if os.path.getsize(filepath) <= max_size or quality <= 10:
+                            break
+                        quality -= 10
+                    while os.path.getsize(filepath) > max_size and w > 100 and h > 100:
+                        w = int(w * 0.9)
+                        h = int(h * 0.9)
+                        qimg = qimg.scaled(w, h, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
+                        quality = 85
+                        while True:
+                            qimg.save(filepath, "WEBP", quality=quality)
+                            if os.path.getsize(filepath) <= max_size or quality <= 10:
+                                break
+                            quality -= 10
+                else:
+                    pil_img = Image.open(image_source).convert('RGBA')
+                    quality = 85
+                    while True:
+                        pil_img.save(filepath, "WEBP", quality=quality)
+                        if os.path.getsize(filepath) <= max_size or quality <= 10:
+                            break
+                        quality -= 10
+                    w, h = pil_img.size
+                    while os.path.getsize(filepath) > max_size and w > 100 and h > 100:
+                        w = int(w * 0.9)
+                        h = int(h * 0.9)
+                        pil_img = pil_img.resize((w, h), Image.LANCZOS)
+                        quality = 85
+                        while True:
+                            pil_img.save(filepath, "WEBP", quality=quality)
+                            if os.path.getsize(filepath) <= max_size or quality <= 10:
+                                break
+                            quality -= 10
+                cursor = self.md_editor.textCursor()
+                cursor.insertText(f"\n![]({filepath})\n")
+                self.status_bar.showMessage(f'Imagen pegada: {filename}', 3000)
+                return True
+            except Exception as e:
+                logger.error("Error saving image: %s", e)
+                return False
+
+        def handle_paste(source):
+            if source.hasImage():
+                pixmap = QtGui.QPixmap(source.imageData())
+                if not pixmap.isNull():
+                    return save_as_webp(pixmap, is_pixmap=True)
+            if source.hasUrls():
+                for url in source.urls():
+                    local_path = url.toLocalFile()
+                    if local_path and os.path.isfile(local_path):
+                        ext = os.path.splitext(local_path)[1].lower()
+                        if ext in ('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'):
+                            return save_as_webp(local_path)
+            return False
+
+        original_insert = self.md_editor.insertFromMimeData
+        def patched_insert(source):
+            if handle_paste(source):
+                return
+            original_insert(source)
+        self.md_editor.insertFromMimeData = patched_insert
 
         self.preview_browser = QtWidgets.QTextBrowser()
         self.preview_browser.setOpenExternalLinks(True)
@@ -582,14 +675,18 @@ class FoxWebManager(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence('Ctrl+V'), self, self._on_paste_item)
 
     def _get_form_state(self) -> dict:
-        return {
+        state = {
             'name': self.name_input.text(),
             'info': self.info_input.toPlainText(),
             'enlace': self.enlace_input.text(),
             'verified': self.verified_cb.isChecked(),
+            'source': self.source_combo.currentText(),
             'badges': self.badges_input.text(),
             'md': self.md_editor.toPlainText(),
         }
+        for key in ('os', 'cpu', 'ram', 'gpu', 'spc'):
+            state[f'req_{key}'] = getattr(self, f'req_{key}').text()
+        return state
 
     def _apply_form_state(self, state: dict):
         self._ignore_form_changes = True
@@ -597,8 +694,11 @@ class FoxWebManager(QtWidgets.QMainWindow):
         self.info_input.setPlainText(state.get('info', ''))
         self.enlace_input.setText(state.get('enlace', ''))
         self.verified_cb.setChecked(state.get('verified', False))
+        self.source_combo.setCurrentText(state.get('source', 'open'))
         self.badges_input.setText(state.get('badges', ''))
         self.md_editor.setPlainText(state.get('md', ''))
+        for key in ('os', 'cpu', 'ram', 'gpu', 'spc'):
+            getattr(self, f'req_{key}').setText(state.get(f'req_{key}', ''))
         self._ignore_form_changes = False
 
 
@@ -788,6 +888,9 @@ class FoxWebManager(QtWidgets.QMainWindow):
         self.id_input.setText(entry.get('id', ''))
         self.verified_cb.setChecked(entry.get('verified', False))
         self.badges_input.setText(', '.join(entry.get('badges', [])))
+        req = entry.get('minRequirements', {}) or {}
+        for key in ('os', 'cpu', 'ram', 'gpu', 'spc'):
+            getattr(self, f'req_{key}').setText(str(req.get(key, '')))
         self.undo_mgr.reset()
         self.undo_mgr.push(self._get_form_state())
         self._ignore_form_changes = False
@@ -885,6 +988,8 @@ class FoxWebManager(QtWidgets.QMainWindow):
         for w in [self.name_input, self.enlace_input, self.id_input, self.badges_input]:
             w.clear()
         self.info_input.clear()
+        for key in ('os', 'cpu', 'ram', 'gpu', 'spc'):
+            getattr(self, f'req_{key}').clear()
         self.undo_mgr.reset()
         self._ignore_form_changes = False
         self.icon_preview.clear()
@@ -1083,6 +1188,13 @@ class FoxWebManager(QtWidgets.QMainWindow):
             )
             return
         html = self._render_markdown(text)
+        html = re.sub(
+            r'<p>((?:\s*<img[^>]*>(?:\s*<a[^>]*>)?(?:\s*</a>)?\s*)+)</p>',
+            lambda m: f'<div class="image-row">{"".join(m.group(1))}</div>'
+            if len(re.findall(r'<img\s', m.group(1))) >= 2
+            else m.group(0),
+            html
+        )
         style = (
             'body { background: #0d0d0f; color: #f4f4f7; font-family: "Inter", "Segoe UI", Roboto, sans-serif; '
             'padding: 20px; line-height: 1.6; font-size: 14px; }'
@@ -1399,14 +1511,28 @@ class FoxWebManager(QtWidgets.QMainWindow):
         raw = self.enlace_input.text()
         enlace = raw if raw and raw != '#' else '#'
         badges = [b.strip() for b in self.badges_input.text().split(',') if b.strip()]
+
+        req = {}
+        for key in ('os', 'cpu', 'ram', 'gpu', 'spc'):
+            val = getattr(self, f'req_{key}').text().strip()
+            if val:
+                req[key] = val
+
         self.dm.update_item(
             self.current_cat, self.current_idx,
             name=self.name_input.text(),
             info=self.info_input.toPlainText(),
             enlace=enlace,
             verified=self.verified_cb.isChecked(),
+            source=self.source_combo.currentText(),
             badges=badges,
         )
+
+        if req:
+            self.dm.data[self.current_cat][self.current_idx]['minRequirements'] = req
+        else:
+            self.dm.data[self.current_cat][self.current_idx].pop('minRequirements', None)
+        self.dm.modified = True
 
 
     def _on_copy_item(self):
