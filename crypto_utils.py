@@ -11,6 +11,7 @@ PASSWORD = "X9f2-K7wQ-M5pZ-V2tRt-XyZ99"
 ITERATIONS = 2000
 ICONS_DIR = "icons"
 MDS_DIR = "mds"
+MEDIA_DIR = os.path.join(MDS_DIR, "media")
 DATA_FILE = "data.json"
 
 sbox = [
@@ -271,3 +272,6 @@ def icon_path(item_id: str) -> str:
 
 def md_path(item_id: str) -> str:
     return os.path.join(MDS_DIR, f'{item_id}.md')
+
+def media_path(filename: str) -> str:
+    return os.path.join(MEDIA_DIR, filename)

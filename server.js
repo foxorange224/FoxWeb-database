@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 const mimeTypes = {
   '.html': 'text/html',
@@ -263,5 +263,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log('Foxinix - Puerto: 80')
+  console.log('Foxinix - Server Database')
 });

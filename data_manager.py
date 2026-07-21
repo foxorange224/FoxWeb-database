@@ -147,9 +147,9 @@ class DataManager:
         self.data[cat].append({
             'name': 'Nuevo elemento', 'info': '',
             'enlace': '#', 'badges': [], 'id': new_id, 'link_status': 'pending',
-
-
+            'source': 'open',
         })
+
         self.modified = True
         logger.info("Added item %s in %s", new_id, cat)
         return new_id
